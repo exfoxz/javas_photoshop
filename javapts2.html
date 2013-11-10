@@ -63,6 +63,20 @@ function creative2() {
 				
 	//}
 }	
+function getData ()
+{
+	return ctx.getImageData(0,0,editedImage.width,editedImage.height);
+}
+function avgBright (imgData)
+{
+	var avgBrightness = new Array();
+	for (var i=0;i<imgData.data.length;i=i+4) {
+		// average the R, G, and B values
+		avgBrightness[i/4]= (imgData.data[i]+imgData.data[i+1]+imgData.data[i+2])/3;
+	}
+	return avgBrightness;
+
+}
 var i, j;
 function invertColor() {
 	//var imgData=ctx.getImageData(0,0,editedImage.width,editedImage.height);
@@ -119,11 +133,23 @@ function moreContrast() {
 	// increase contrast by lightening highlights and darkening shadows
 	// replace line below with your own code
 	//alert("more contract not implemented");
-	var imgData=ctx.getImageData(0,0,editedImage.width,editedImage.height);
-	var nPixels = imgData.data.length/4;
-	var avgBrightness = new Array();
+	var imgData= getData();
+	//var nPixels = imgData.data.length/4;
 	var max = 0;
 	var min = 0;
+
+	var avgBrightness = avgBright(imgData);
+	for (var i=0;i<imgData.data.length;i=i+4) {
+		if(avgBrightness[i/4]>=max)
+		{
+			max = avgBrightness[i/4];
+		}
+		if(avgBrightness[i/4]<=max)
+		{
+			min = avgBrightness[i/4];
+		}
+	}
+	/*
 	for (var i=0;i<imgData.data.length;i=i+4) {
 		// average the R, G, and B values
 		avgBrightness[i/4]= (imgData.data[i]+imgData.data[i+1]+imgData.data[i+2])/3;
@@ -138,7 +164,7 @@ function moreContrast() {
 		//if(avgBrightness[i/4])
 		//document.getElementById('hello').value += imgData.data[i];
 		// in loop, set R, G, and B values to the average; no change to A
-	}
+	}*/
 	var ratio = (255-min)/(max-min);
 	for (var i=0;i<imgData.data.length;i=i+4) 
 	{
@@ -146,7 +172,7 @@ function moreContrast() {
 		imgData.data[i+1]=(imgData.data[i+1] - min)*ratio + min;
 		imgData.data[i+2]=(imgData.data[i+2] - min)*ratio + min;
 	}
-	document.getElementById('hello').value = ratio;
+	document.getElementById('hello').value = min;
 	//alert(imgData.data[5]);
 	ctx.putImageData(imgData,0,0);
 	//alert(max);
@@ -156,7 +182,43 @@ function moreContrast() {
 function lessConstrast() {
 	// reduce contrast by darkening highlights and brightening shadows
 	// replace line below with7n code
-	alert("less contract not implemented");
+	var imgData=ctx.getImageData(0,0,editedImage.width,editedImage.height);
+	var nPixels = imgData.data.length/4;
+	var avgBrightness = new Array();
+	var max = 0;
+	var min = 0;
+	for (var i=0;i<imgData.data.length;i=i+4) {
+		// average the R, G, and B values
+		avgBrightness[i/4]= (imgData.data[i]+imgData.data[i+1]+imgData.data[i+2])/3;
+		//if(avgBrightness[i/4])
+		//document.getElementById('hello').value += imgData.data[i];
+		// in loop, set R, G, and B values to the average; no change to A
+	}
+	avgBrightness.sort(function(a,b) {return a-b}); 
+	var ratio = (avgBrightness[nPixels]/avgBrightness[0]);
+	/*for (var i=0;i<imgData.data.length;i=i+4) 
+	{
+		if(avgBrightness[i/4]<=avgBrightness[nPixels/2])
+		{
+			imgData.data[i]= imgData.data[i] + 10;
+			imgData.data[i+1]= imgData.data[i+1] + 10;
+			imgData.data[i+2]=	imgData.data[i+2] + 10;
+		} else if (avgBrightness[i/4] > avgBrightness[nPixels/2])
+		{
+			imgData.data[i]= imgData.data[i] - 10;
+			imgData.data[i+1]= imgData.data[i+1]- 10;
+			imgData.data[i+2]=	imgData.data[i+2]- 10;
+		}
+	}*/
+	for (var j = 0; j < 100000; j++)
+	{
+		document.getElementById('hello').value += avgBrightness[j];
+	}
+	
+	//alert(imgData.data[5]);
+	ctx.putImageData(imgData,0,0);
+	//alert(max);
+	//var ratio = (255-)
 }
 
 function bw() {
@@ -185,13 +247,6 @@ function bw() {
 
 function bs() {
 	// brighten shadows
-	var imgData=ctx.getImageData(0,0,editedImage.width,editedImage.height);
-		for (var i=0;i<imgData.data.length;i=i+4) {
-		imgData.data[i] += 10;
-		imgData.data[i+1] = 10;
-		imgData.data[i+2] = 10;
-	}
-	ctx.putImageData(imgData,0,0);
 	//alert ("brighten shadows not implemented");
 }
 
