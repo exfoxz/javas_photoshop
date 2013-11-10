@@ -77,14 +77,21 @@ function bw() {
 	// second, loop through all the pixels.  each pixel has 4 values RGBA
 	// imgData.data is the array of pixel data
 	// imgData.data.length is the size of the array
-	for (var i=0;i<imgData.data.length;i=i+4) {
+	for (var i=0;i<10000;i=i+4) {
 		// average the R, G, and B values
-		var avg = (imgData.data[i]+imgData.data[i+1]+imgData.data[i+2])/3;
+		var avg = (imgData.data[i]+imgData.data[i+1]+imgData.data[i+2])/3 + "END\n";
+		document.getElementById('hello').value += avg;
 		// in loop, set R, G, and B values to the average; no change to A
 		imgData.data[i] = avg;
 		imgData.data[i+1] = avg;
 		imgData.data[i+2] = avg;
+		
 	}
+	//imgData=ctx.getImageData(0,0,editedImage.width,editedImage.height);
+	//for (var i = 0; i< 1000; i++)
+	//{
+	//	document.getElementById('hello').value = imgData.data[i];
+	//}
 	// take the modified array and put it back as the new version of the edited image
 	// okay not to understand details of putImageDate for this course
 	//    just use it in the other functions
@@ -144,6 +151,8 @@ function creative() {
     </td> 
 </tr>
 </table>
+<textarea id="hello" cols= "100" rows= "25"> </textarea>
+
  
 </body>
 </html>

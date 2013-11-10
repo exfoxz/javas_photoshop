@@ -118,12 +118,44 @@ function darken() {
 function moreContrast() {
 	// increase contrast by lightening highlights and darkening shadows
 	// replace line below with your own code
-	alert("more contract not implemented");
+	//alert("more contract not implemented");
+	var imgData=ctx.getImageData(0,0,editedImage.width,editedImage.height);
+	var nPixels = imgData.data.length/4;
+	var avgBrightness = new Array();
+	var max = 0;
+	var min = 0;
+	for (var i=0;i<imgData.data.length;i=i+4) {
+		// average the R, G, and B values
+		avgBrightness[i/4]= (imgData.data[i]+imgData.data[i+1]+imgData.data[i+2])/3;
+		if(avgBrightness[i/4]>=max)
+		{
+			max = avgBrightness[i/4];
+		}
+		if(avgBrightness[i/4]<=max)
+		{
+			min = avgBrightness[i/4];
+		}
+		//if(avgBrightness[i/4])
+		//document.getElementById('hello').value += imgData.data[i];
+		// in loop, set R, G, and B values to the average; no change to A
+	}
+	var ratio = (255-min)/(max-min);
+	for (var i=0;i<imgData.data.length;i=i+4) 
+	{
+		imgData.data[i]=(imgData.data[i] - min)*ratio + min;
+		imgData.data[i+1]=(imgData.data[i+1] - min)*ratio + min;
+		imgData.data[i+2]=(imgData.data[i+2] - min)*ratio + min;
+	}
+	document.getElementById('hello').value = ratio;
+	//alert(imgData.data[5]);
+	ctx.putImageData(imgData,0,0);
+	//alert(max);
+	//var ratio = (255-)
 }
 
 function lessConstrast() {
 	// reduce contrast by darkening highlights and brightening shadows
-	// replace line below with your own code
+	// replace line below with7n code
 	alert("less contract not implemented");
 }
 
