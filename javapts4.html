@@ -116,7 +116,7 @@ function creative2() {
 function invertColor() {
 	//var imgData=ctx.getImageData(0,0,editedImage.width,editedImage.height);
 	//var imgData=ctx.getImageData(0,0,editedImage.width,editedImage.height);
-		while (i<=j) {
+		while (i<=j+5000) {
 			imgData.data[i] = 255-imgData.data[i] ;
 			imgData.data[i+1] = 255-imgData.data[i+1] ;
 			imgData.data[i+2] = 255-imgData.data[i+2] ;
@@ -155,7 +155,7 @@ function darkenx() {
 }
 
 function darken(value) {
-		while (i<=j) {
+		while (i<=j+5000) {
 		imgData.data[i] -= value/2;
 		imgData.data[i+1] -= value/2;
 		imgData.data[i+2] -= value/2;
