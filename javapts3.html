@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title> CSE 001 Programming Assignment startingVersion </title>
+<style type = "text/css">
+body {background-color : gray; 
+      color : black;}
+table {border-collapse : collapse;
+       border : 7px black;}
+</style>
+</head>
+
+<body>
+
+<script>
+var editedImage, initialImage, ctx, h, w, i, xc, xl, yc, yl;
+// Code below sets up an initial random image
+// Don't edit this unless you want to change the initial image
+// See http://www.w3schools.com/tags/ref_canvas.asp for ways to do this
+// But that's NOT part of the assignment, nor is it covered in CSE 001
+document.write (
+"<canvas id='editedImageID' width= 600 height= 400 > HTML5 canvas tag not supported </canvas>"
+);
+function randy(n) {return 1+Math.floor(Math.random()*n);}
+function colorchoice() {return randy(255)*(randy(4)==1?0:1);}
+editedImage=document.getElementById("editedImageID");
+w = editedImage.width;
+h = editedImage.height;
+ctx=editedImage.getContext("2d");
+for (i = 0; i < 2*Math.sqrt(w*h); i++) {
+	xc = randy(w);
+	yc = randy(h);
+	xl = randy(w/5);
+	yl = randy(h/5);
+	ctx.fillStyle="rgb("+colorchoice()+","+colorchoice()+","+colorchoice()+")";
+	ctx.fillRect(xc,yc,xl,yl);
+}
+// End of initial image code
+//////////////////////////////////////////////////
+/////////////////////////////////////////////////
+
+//Import image data
+var imgData=ctx.getImageData(0,0,editedImage.width,editedImage.height);
+
+//Export image data
+function putData(imgData)
+{
+	ctx.putImageData(imgData,0,0);
+}
+
+//Necessary variables for the programs
+var i, j;
+var counter = 0;
+
+//Calculate average brightness for each pixel
+function avgBright (imgData)
+{
+	var avgBrightness = new Array();
+	for (var i=0;i<imgData.data.length;i=i+4) {
+		// average the R, G, and B values
+		avgBrightness[i/4] = (imgData.data[i]+imgData.data[i+1]+imgData.data[i+2])/3;
+	}
+	//avgBrightness.sort(function(a,b) { return a-b;});
+	return avgBrightness;
+
+}
+
+function promptValue(type)
+{
+	var value = prompt("On a scale from 1 to 10, how much would you like to " + type + " ?");
+	
+	while(true)
+	{
+		if(isNaN(value))
+		{
+			value = prompt("Please enter a number, sir! Please re-enter:");
+		}
+		else if (value < 1 || value > 10)
+		{
+			if(value == null)
+			{
+				break;
+			}
+			value = prompt("Only from 1 to 10, sir! Please re-enter:");
+		} else
+		{
+			break;
+		}
+	} 
+	return value*(255/10);
+}
+
+function sleep() {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > 1000){
+      break;
+    }
+  }
+}
+
+function creative2() {
+	//for (var i=0;i<100;i++)
+	//{
+	counter = counter + 1;
+	document.getElementById("hello").value += " hello " + counter;
+	if (counter == 5) {
+	counter = 0;
+	return}
+	setTimeout(function(){ creative2()},1000);
+				
+	//}
+}	
+
+function invertColor() {
+	//var imgData=ctx.getImageData(0,0,editedImage.width,editedImage.height);
+	//var imgData=ctx.getImageData(0,0,editedImage.width,editedImage.height);
+		while (i<=j) {
+			imgData.data[i] += 100;
+			imgData.data[i+1] += 100;
+			imgData.data[i+2] += 100;
+			i+=4;
+			//setTimeout(function(){ putData(imgData)},1000);
+				}
+				j=j+5000;
+				putData(imgData);
+				if (j>=960000)
+				{
+					return;
+				}
+				setTimeout(function() { invertColor() },100 );
+	//ctx.putImageData(imgData,0,0);
+	//alert("invert color not implemented");
+}
+
+
+function brighten() 
+	//brighten the random image
+{
+	var value = promptValue("brighten");
+	for (var i=0;i<imgData.data.length;i=i+4) {
+		imgData.data[i] += value/2;
+		imgData.data[i+1] += value/2;
+		imgData.data[i+2] += value/2;
+	}
+	putData(imgData);
+}
+
+function darken() {
+	// darken the random image
+	var value = promptValue("darken");
+	for (var i=0;i<imgData.data.length;i=i+4) {
+		imgData.data[i] -= value/2;
+		imgData.data[i+1] -= value/2;
+		imgData.data[i+2] -= value/2;
+	}
+	putData(imgData);
+	//alert("darken not implemented");
+}
+
+function moreContrast() {
+	// increase contrast by lightening highlights and darkening shadows
+
+	var avgBrightness = avgBright(imgData);
+	avgBrightness.sort(function(a,b) {return a-b}); 
+	var max = avgBrightness[avgBrightness.length-1];
+	var min = avgBrightness[0];
+	//var max = 0;
+	
+	/*
+	for (var i=0;i<imgData.data.length;i=i+4) {
+		if(avgBrightness[i/4]>=max)
+		{
+			max = avgBrightness[i/4];
+		}
+		if(avgBrightness[i/4]<=max)
+		{
+			min = avgBrightness[i/4];
+		}
+	}
+	*/
+	
+
+	var ratio = (255-min)/(max-min);
+
+	for (var i=0;i<imgData.data.length;i=i+4) 
+	{
+		imgData.data[i]=(imgData.data[i] - min)*ratio + min;
+		imgData.data[i+1]=(imgData.data[i+1] - min)*ratio + min;
+		imgData.data[i+2]=(imgData.data[i+2] - min)*ratio + min;
+	}
+
+
+			document.getElementById('hello').value = ratio;
+
+	putData(imgData);
+}
+
+function lessConstrast() {
+	// reduce contrast by darkening highlights and brightening shadows
+	var nPixels = imgData.data.length/4;
+	var avgBrightnessSort = avgBright(imgData);
+	avgBrightnessSort.sort(function(a,b) {return a-b}); 
+	var avgBrightness = avgBright(imgData);
+
+	for (var i=0;i<imgData.data.length;i=i+4) {
+		if(avgBrightness[i/4] > avgBrightnessSort[nPixels/2])
+		{
+			imgData.data[i] -= 15;
+			imgData.data[i+1] -= 15;
+			imgData.data[i+2] -= 15;
+		} else 
+		{
+			imgData.data[i] += 15;
+			imgData.data[i+1] += 15;
+			imgData.data[i+2] += 15;
+		}
+	}
+	putData(imgData);
+}
+
+function bw() {
+	// convert to black and white
+	var avgBrightness = avgBright(imgData);
+	for (var i=0;i<imgData.data.length;i=i+4) {
+		imgData.data[i] = avgBrightness[i/4];
+		imgData.data[i+1] = avgBrightness[i/4];
+		imgData.data[i+2] = avgBrightness[i/4];
+	}
+	putData(imgData);
+}
+
+function bs() {
+	// brighten shadows
+	var value = promptValue("brighten shadows");
+	var nPixels = imgData.data.length/4
+	var avgBrightnessSort = avgBright(imgData);
+	avgBrightnessSort.sort(function(a,b) {return a-b}); 
+	var avgBrightness = avgBright(imgData);
+
+	for (var i=0;i<imgData.data.length;i=i+4) {
+		// average the R, G, and B values
+		if(avgBrightness[i/4] > 38 && avgBrightness[i/4] <= avgBrightnessSort[nPixels/4])
+		{
+			imgData.data[i] += value;
+			imgData.data[i+1] += value;
+			imgData.data[i+2] += value;
+		}
+	}
+	putData(imgData);
+}
+
+function dh() {
+	// darken highlights
+	var value = promptValue("darken highlights");
+	var nPixels = imgData.data.length/4;
+	var avgBrightnessSort = avgBright(imgData);
+	avgBrightnessSort.sort(function(a,b) {return a-b}); 
+	var avgBrightness = avgBright(imgData);
+
+	for (var i=0;i<imgData.data.length;i=i+4) {
+		// average the R, G, and B values
+		if(avgBrightness[i/4] > avgBrightnessSort[nPixels/2])
+		{
+			imgData.data[i] -= value;
+			imgData.data[i+1] -= value;
+		}
+	}
+	putData(imgData);
+}
+
+function creative() {
+	alert ("here is where your creative function goes.");
+}
+
+</script>
+
+<!-- edit the table below to include other features you add and to remove those
+	features that you have chosen not to implement.  -->
+<table>
+<tr>
+    <td>
+        <input type=button value="       Invert Image       " onClick = 'i=0;j=0;invertColor();'>
+    </td>
+    <td>
+        <input type=button value="          Brighten          " onClick = 'brighten();'>
+    </td>
+    <td>
+        <input type=button value="         Darken         " onClick = 'darken();'>
+    </td>
+</tr>
+<tr>
+    <td>
+        <input type=button value="     More Contrast      " onClick = 'moreContrast()'>
+    </td>
+    <td>
+        <input type=button value="      Less Contrast       " onClick = 'lessConstrast()'>
+    </td>
+    <td>
+        <input type=button value="  Black and White   " onClick = 'bw()'>
+    </td>
+</tr>
+<tr>
+    <td>
+        <input type=button value="   Brighten Shadows   " onClick = 'bs()'>
+    </td>
+    <td>
+        <input type=button value="   Darken Highlights   " onClick = 'dh()'>
+    </td>
+    <td>
+        <input type=button value="Something Creative" onClick = 'creative2()'>
+    </td> 
+</tr>
+</table>
+<textarea id="hello" cols= "100" rows= "25"> </textarea>
+ 
+</body>
+</html>
