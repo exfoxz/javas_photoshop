@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
+<!--	CHANH NGUYEN - cpn217@lehigh.edu
+		CSE001 - Programming Assignment 1 -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<title> CSE 001 Programming Assignment startingVersion </title>
+<title> Photojavascript </title>
 <style type = "text/css">
-body {background-color : gray; 
+body {background-color : #D8D8D8 ; 
       color : black;}
 table {border-collapse : collapse;
        border : 7px black;}
@@ -20,7 +22,7 @@ var editedImage, initialImage, ctx, h, w, i, xc, xl, yc, yl;
 // See http://www.w3schools.com/tags/ref_canvas.asp for ways to do this
 // But that's NOT part of the assignment, nor is it covered in CSE 001
 document.write (
-"<canvas id='editedImageID' width= 600 height= 400 > HTML5 canvas tag not supported </canvas>"
+"<h1> (lesser) Photoshop with Javascript! </h1>" + "<canvas id='editedImageID' width= 600 height= 400 > HTML5 canvas tag not supported </canvas>"
 );
 function randy(n) {return 1+Math.floor(Math.random()*n);}
 function colorchoice() {return randy(255)*(randy(4)==1?0:1);}
@@ -37,95 +39,510 @@ for (i = 0; i < 2*Math.sqrt(w*h); i++) {
 	ctx.fillRect(xc,yc,xl,yl);
 }
 // End of initial image code
+//////////////////////////////////////////////////
+/////////////////////////////////////////////////
 
-function invertColor() {
-	// replace line below with your own code
-	alert("invert color not implemented");
+//Import image data into imgData
+var imgData=ctx.getImageData(0,0,editedImage.width,editedImage.height);
+
+
+//create another random image using the initial code
+function another()
+{
+editedImage=document.getElementById("editedImageID");
+w = editedImage.width;
+h = editedImage.height;
+ctx=editedImage.getContext("2d");
+for (i = 0; i < 2*Math.sqrt(w*h); i++) {
+	xc = randy(w);
+	yc = randy(h);
+	xl = randy(w/5);
+	yl = randy(h/5);
+	ctx.fillStyle="rgb("+colorchoice()+","+colorchoice()+","+colorchoice()+")";
+	ctx.fillRect(xc,yc,xl,yl);
+	}
+	//assign the new image data to the imgData var
+	imgData=ctx.getImageData(0,0,editedImage.width,editedImage.height);
 }
 
-function brighten() {
-	// brighten by adding to each of the R, G, and B values
-	// replace line below with your own code
-	alert("brighten not implemented");
+//Export image data
+function putData(imgData)
+{
+	ctx.putImageData(imgData,0,0);
 }
 
-function darken() {
-	// darken by negative brightening
-	// replace line below with your own code
-	alert("darken not implemented");
+//Necessary variables for the programs
+var i;
+var j;
+var counter = 0;
+var speed = 1;
+var value = 20;
+
+//Calculate average brightness for each pixel
+function avgBright (imgData)
+{
+	var avgBrightness = new Array();
+	for (var i=0;i<imgData.data.length;i=i+4) {
+		// average the R, G, and B values
+		avgBrightness[i/4] = (imgData.data[i]+imgData.data[i+1]+imgData.data[i+2])/3;
+	}
+	return avgBrightness;
 }
 
+//change the value of the textarea when the Feeling lucky button is clicked 
+function luckyChange(text)
+{
+	document.getElementById('luckyText').value = text;
+}
+
+//turn on, turn off the SPEED button
+function input()
+{
+	if(document.getElementById('mySelect').value == "ON")
+	{
+		document.getElementById('myInput').disabled=false;
+	} else
+	{
+		document.getElementById('myInput').disabled=true;
+	}
+}
+
+//get power, the level of change, from the button
+function powerChange()
+{
+	value = parseInt(document.getElementById('myPower').value);
+	//if it is not a number, aka "Xtreme!", then assign 60 to value
+	if(isNaN(value))
+	{
+		value = 60;
+	}
+}
+
+//get transition SPEED from the button
+function transitionSpeed()
+{
+	speed = parseInt(document.getElementById('myInput').value);
+}
+
+//see if transition is ON or OFF and proceed accordingly
+function transition(x,y)
+{
+	var transitionToggle = document.getElementById('mySelect').value;
+	if(transitionToggle == "OFF")
+	{
+		x();
+	} else
+	{
+		//reset i, j value
+		i=0;
+		j=0;
+		y();
+	}
+}	
+
+
+//invertColor function without transition
+function invertColorx() {
+	for (var i=0;i<imgData.data.length;i=i+4) {
+			imgData.data[i] = 255-imgData.data[i] ;
+			imgData.data[i+1] = 255-imgData.data[i+1] ;
+			imgData.data[i+2] = 255-imgData.data[i+2] ;
+		}
+	putData(imgData);
+}
+
+//inverColor function with transition ON
+function invertColorTrans() {
+		while (i<=j+(5000*speed)) {
+			imgData.data[i] = 255-imgData.data[i];
+			imgData.data[i+1] = 255-imgData.data[i+1] ;
+			imgData.data[i+2] = 255-imgData.data[i+2] ;
+			i+=4;
+				}
+				j=j+(5000*speed);
+				putData(imgData);
+				if (j>=960000)
+				{
+					return;
+				}
+				setTimeout(function() { invertColorTrans(); },100 );
+}
+
+//brighten function that increase brightness according to the user's input
+function brightenx() 
+	//brighten the random image
+	{
+	for (var i=0;i<imgData.data.length;i=i+4){
+		imgData.data[i] += value;
+		imgData.data[i+1] += value;
+		imgData.data[i+2] += value;
+	}
+	putData(imgData);
+	//alert(value);
+}
+
+//function to lead to the brighten function so that it will not enter loop of prompting the user
+function brightenTrans() {
+	i = 0;
+	j = 0;
+	brighten(value);
+}
+
+//the actual brighten fuction with transition ON
+function brighten(value) {
+		while (i<=j+(5000*speed)) {
+		imgData.data[i] += value;
+		imgData.data[i+1] += value;
+		imgData.data[i+2] += value;
+		i+=4;
+		}
+		j=j+(5000*speed);
+		putData(imgData);
+		if (j>=960000)
+		{
+			return;
+		}
+		//wait 0.1 so that the user can see the transition
+		setTimeout(function() { brighten(value); }, 100 );
+	}
+
+//darken function that decreases brightness according to the user's input
+function darkenx()
+{
+	for (var i=0;i<imgData.data.length;i=i+4) {
+		imgData.data[i] -= value;
+		imgData.data[i+1] -= value;
+		imgData.data[i+2] -= value;
+	}
+	putData(imgData);
+}
+
+//function to lead to the darken function so that it will not enter loop of prompting the user
+function darkenTrans() {
+	i = 0;
+	j = 0;
+	darken(value);
+}
+
+//the actual darken fuction with transition ON
+function darken(value) {
+		while (i<=j+(5000*speed)) {
+		imgData.data[i] -= value;
+		imgData.data[i+1] -= value;
+		imgData.data[i+2] -= value;
+		i+=4;
+		}
+		j=j+(5000*speed);
+		putData(imgData);
+		if (j>=960000)
+		{
+			return;
+		}
+		setTimeout(function() { darken(value); }, 100 );
+	}
+
+
+//create more contrast by sketching out the pixels, according to Snyder 
 function moreContrast() {
 	// increase contrast by lightening highlights and darkening shadows
-	// replace line below with your own code
-	alert("more contract not implemented");
+	var avgBrightness = avgBright(imgData);
+	avgBrightness.sort(function(a,b) {return a-b}); 
+	var max = avgBrightness[avgBrightness.length-1];
+	var min = avgBrightness[0];
+
+	var ratio = (255-min)/(max-min);
+
+	//choose between two functions based on whether the transition is ON or OFF 
+	transition(moreContrastx, moreContrastTrans);
+
+	//moreContrast function with transition OFF
+	function moreContrastx() 
+	{
+		for (var i=0;i<imgData.data.length;i=i+4) 
+		{
+			imgData.data[i]=(imgData.data[i] - min)*ratio + min;
+			imgData.data[i+1]=(imgData.data[i+1] - min)*ratio + min;
+			imgData.data[i+2]=(imgData.data[i+2] - min)*ratio + min;
+		}
+
+		putData(imgData);
+	}
+
+	//moreContrast function with transition ON
+	function moreContrastTrans()
+	{
+		while (i<=j+(5000*speed)) {
+		imgData.data[i] = (imgData.data[i] - min)*ratio + min;
+		imgData.data[i+1] = (imgData.data[i+1] - min)*ratio + min;
+		imgData.data[i+2] = (imgData.data[i+2] - min)*ratio + min;
+		i+=4;
+		}
+		j=j+(5000*speed);
+		putData(imgData);
+		if (j>=960000)
+		{
+			return;
+		}
+		setTimeout(function() { moreContrastTrans(); }, 100 );
+	}
+
 }
 
-function lessConstrast() {
+function lessContrast() {
 	// reduce contrast by darkening highlights and brightening shadows
-	// replace line below with your own code
-	alert("less contract not implemented");
+	var nPixels = imgData.data.length/4;
+	var avgBrightnessSort = avgBright(imgData);
+	avgBrightnessSort.sort(function(a,b) {return a-b}); 
+	var avgBrightness = avgBright(imgData);
+
+	
+	//choose between two functions based on whether the transition is ON or OFF 
+	transition(lessContrastx, lessContrastTrans);
+
+	//lessContrast function with transition OFF
+	function lessContrastx() 
+	{
+		for (var i=0;i<imgData.data.length;i=i+4) {
+			if(avgBrightness[i/4] > avgBrightnessSort[nPixels/2])
+			{
+				imgData.data[i] -= 15;
+				imgData.data[i+1] -= 15;
+				imgData.data[i+2] -= 15;
+			} else 
+			{
+				imgData.data[i] += 15;
+				imgData.data[i+1] += 15;
+				imgData.data[i+2] += 15;
+			}
+		}
+		putData(imgData);
+	}
+
+	//lessContrast function with transition ON
+	function lessContrastTrans()
+	{
+		while (i<=j+(5000*speed)) {
+			if(avgBrightness[i/4] > avgBrightnessSort[nPixels/2])
+				{
+					imgData.data[i] -= 15;
+					imgData.data[i+1] -= 15;
+					imgData.data[i+2] -= 15;
+				} else 
+				{
+					imgData.data[i] += 15;
+					imgData.data[i+1] += 15;
+					imgData.data[i+2] += 15;
+				}
+			i+=4;
+		}
+		j=j+(5000*speed);
+		putData(imgData);
+		if (j>=960000)
+		{
+			return;
+		}
+		setTimeout(function() { lessContrastTrans(); }, 100 );
+	}
 }
 
 function bw() {
-	// convert to black and white
-	// set each pixel to the average of its RGB values and leave transparency as is
-	// first, create a variable to hold the edited image
-	// okay not to understand details of getImageData for this course
-	//     You'll just need use the line below in the other functions
-	var imgData=ctx.getImageData(0,0,editedImage.width,editedImage.height);
-	// second, loop through all the pixels.  each pixel has 4 values RGBA
-	// imgData.data is the array of pixel data
-	// imgData.data.length is the size of the array
-	for (var i=0;i<10000;i=i+4) {
-		// average the R, G, and B values
-		var avg = (imgData.data[i]+imgData.data[i+1]+imgData.data[i+2])/3 + "END\n";
-		document.getElementById('hello').value += avg;
-		// in loop, set R, G, and B values to the average; no change to A
-		imgData.data[i] = avg;
-		imgData.data[i+1] = avg;
-		imgData.data[i+2] = avg;
-		
+	// convert to black and white by setting the values of pixels to its average
+	var avgBrightness = avgBright(imgData);
+
+	//choose between two functions based on whether the transition is ON or OFF 
+	transition(bwx, bwTrans);
+
+	function bwx() 
+	//black and white the random image with transition OFF
+	{
+		for (var i=0;i<imgData.data.length;i=i+4) {
+			imgData.data[i] = avgBrightness[i/4];
+			imgData.data[i+1] = avgBrightness[i/4];
+			imgData.data[i+2] = avgBrightness[i/4];
+		}
+		putData(imgData);
 	}
-	//imgData=ctx.getImageData(0,0,editedImage.width,editedImage.height);
-	//for (var i = 0; i< 1000; i++)
-	//{
-	//	document.getElementById('hello').value = imgData.data[i];
-	//}
-	// take the modified array and put it back as the new version of the edited image
-	// okay not to understand details of putImageDate for this course
-	//    just use it in the other functions
-	ctx.putImageData(imgData,0,0);
+
+	//black and white the random image with transition ON
+	function bwTrans()
+	{
+		while (i<=j+(5000*speed)) {
+			imgData.data[i] = avgBrightness[i/4];
+			imgData.data[i+1] = avgBrightness[i/4];
+			imgData.data[i+2] = avgBrightness[i/4];
+			i+=4;
+		}
+		j=j+(5000*speed);
+		putData(imgData);
+		if (j>=960000)
+		{
+			return;
+		}
+		setTimeout(function() { bwTrans(); }, 100 );
+	}
 }
 
 function bs() {
 	// brighten shadows
-	alert ("brighten shadows not implemented");
+	//shadows are those pixels with average brighteness above 38
+	//and in the range of the lower 25%.
+	var nPixels = imgData.data.length/4
+	var avgBrightnessSort = avgBright(imgData);
+	avgBrightnessSort.sort(function(a,b) {return a-b}); 
+	var avgBrightness = avgBright(imgData);
+
+	//choose between two functions based on whether the transition is ON or OFF 
+	transition(bsx, bsTrans);
+
+	//brighten shadows of the random image with transition OFF
+	function bsx() 
+	{
+		for (var i=0;i<imgData.data.length;i=i+4) {
+			if(avgBrightness[i/4] > 38 && avgBrightness[i/4] <= avgBrightnessSort[nPixels/4])
+				{
+					imgData.data[i] += value;
+					imgData.data[i+1] += value;
+					imgData.data[i+2] += value;
+				}
+		}
+		putData(imgData);
+	}
+
+	//brighten shadows of the random image with transition ON
+	function bsTrans()
+	{
+		while (i<=j+(5000*speed)) {
+			if(avgBrightness[i/4] > 38 && avgBrightness[i/4] <= avgBrightnessSort[nPixels/4])
+				{
+					imgData.data[i] += value;
+					imgData.data[i+1] += value;
+					imgData.data[i+2] += value;
+				}
+			i+=4;
+		}
+		j=j+(5000*speed);
+		putData(imgData);
+		if (j>=960000)
+		{
+			return;
+		}
+		setTimeout(function() { bsTrans(); }, 100 );
+	}
 }
 
 function dh() {
 	// darken highlights
-	alert("darken highlights not implemented");
+	//hightlights are chosen as those in the highest 50% of average brightness
+	var nPixels = imgData.data.length/4;
+	var avgBrightnessSort = avgBright(imgData);
+	avgBrightnessSort.sort(function(a,b) {return a-b}); 
+	var avgBrightness = avgBright(imgData);
+
+	//choose between two functions based on whether the transition is ON or OFF 
+	transition(dhx, dhTrans);
+
+	//brighten shadows of the random image with transition OFF
+	function dhx() 
+	{
+		for (var i=0;i<imgData.data.length;i=i+4) {
+			if(avgBrightness[i/4] > avgBrightnessSort[nPixels/2])
+				{
+					imgData.data[i] -= value;
+					imgData.data[i+1] -= value;
+					imgData.data[i+2] -= value;
+				}
+		}
+		putData(imgData);
+	}
+
+	//brighten shadows of the random image with transition ON
+	function dhTrans()
+	{
+		while (i<=j+(5000*speed)) {
+			if(avgBrightness[i/4] > avgBrightnessSort[nPixels/2])
+				{
+					imgData.data[i] -= value;
+					imgData.data[i+1] -= value;
+					imgData.data[i+2] -= value;
+				}
+			i+=4;
+		}
+		j=j+(5000*speed);
+		putData(imgData);
+		if (j>=960000)
+		{
+			return;
+		}
+		setTimeout(function() { dhTrans(); }, 100 );
+	}
 }
 
-function creative() {
-	alert ("here is where your creative function goes.");
+//feeling lucky? functiom
+function lucky() {
+	//create a random number from 1 to 9
+	var luckyNum = 1 + Math.floor((Math.random()*9));
+	//check which number is it to execute...
+	switch(luckyNum)
+	{
+		case 1:
+		invertColorx();	
+		luckyChange("Invert Color!");
+		break;
+		case 2:
+		brightenx();
+		luckyChange("Brighten!");
+		break;
+		case 3:
+		darkenx();
+		luckyChange("Darken!");
+		break;
+		case 4:
+		moreContrast();
+		luckyChange("More Contrast!");
+		break;
+		case 5:
+		lessContrast();
+		luckyChange("Less Contrast!");
+		break;
+		case 6:
+		bw();
+		luckyChange("Black and White!");
+		break;
+		case 7:
+		bs();
+		luckyChange("Brighten Shadows!");
+		break;
+		case 8:
+		dh();
+		luckyChange("Darken Highlights!");
+		break;
+		case 9:
+		luckyChange("Lucky! Combo of 3!");
+		invertColorx();	
+		brightenx();
+		darkenx();
+		break;
+
+	}
+	putData(imgData);
 }
 
 </script>
 
-<!-- edit the table below to include other features you add and to remove those
-	features that you have chosen not to implement.  -->
+<!-- tables with the buttons and transition ON OFF and SPEED-->
 <table>
 <tr>
     <td>
-        <input type=button value="       Invert Image       " onClick = 'invertColor();'>
+        <input type=button value="       Invert Image       " onClick = 'transition(invertColorx, invertColorTrans)'>
     </td>
     <td>
-        <input type=button value="          Brighten          " onClick = 'brighten();'>
+        <input type=button value="           Brighten          " onClick = 'transition(brightenx, brightenTrans)'>
     </td>
     <td>
-        <input type=button value="         Darken         " onClick = 'darken();'>
+        <input type=button value="         Darken         " onClick = 'transition(darkenx, darkenTrans)'>
+    </td>
+    <td>
+    	<input type=button value="         Another...        " onClick = 'another()'>
     </td>
 </tr>
 <tr>
@@ -133,26 +550,54 @@ function creative() {
         <input type=button value="     More Contrast      " onClick = 'moreContrast()'>
     </td>
     <td>
-        <input type=button value="      Less Contrast       " onClick = 'lessConstrast()'>
+        <input type=button value="      Less Contrast      " onClick = 'lessContrast()'>
     </td>
     <td>
         <input type=button value="  Black and White   " onClick = 'bw()'>
     </td>
+    <td>
+    </td>
 </tr>
 <tr>
     <td>
-        <input type=button value="   Brighten Shadows   " onClick = 'bs()'>
+        <input type=button value="   Brighten Shadows  " onClick = 'bs()'>
     </td>
     <td>
-        <input type=button value="   Darken Highlights   " onClick = 'dh()'>
+        <input type=button value="  Darken Highlights   " onClick = 'dh()'>
+    </td>
+     <td>
+        <input type=button value="  Feeling lucky?   " onClick = 'lucky()'>
     </td>
     <td>
-        <input type=button value="Something Creative" onClick = 'creative()'>
+    	<textarea id='luckyText' cols = "20" rows = "1"></textarea>
+    </td>
+</tr>
+<tr>
+	<td> <b> POWER </b>
+		<select id="myPower" autocomplete = off onChange = 'powerChange()'>
+			<option>20</option>
+			<option>30</option>
+			<option>40</option>
+			<option>Xtreme!</option>
+		</select>
+	</td>
+	 <td> <b>    TRANSITION:     </b>
+       <select id="mySelect" autocomplete = off onChange ='input()'>
+			<option>OFF</option>
+			<option>ON</option>
+		</select>
     </td> 
+    <td>   <b> SPEED </b> 
+    	<select disabled id="myInput" autocomplete = off onChange = 'transitionSpeed()'>
+			<option>1</option>
+			<option>2</option>
+			<option>3</option>
+			<option>4</option>
+		</select>
+    </td>
+    <td>
+    </td>
 </tr>
 </table>
-<textarea id="hello" cols= "100" rows= "25"> </textarea>
-
- 
 </body>
 </html>
